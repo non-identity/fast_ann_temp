@@ -13,7 +13,7 @@ class XvecsReader : public DataReader<T> {
    public:
     Dataset<T> read(const std::string file_name) {
         std::ifstream file_stream(file_name, std::ios::binary);
-        int dim;
+        DimensionType dim;
         file_stream.read((char*)&dim, sizeof(dim));
         LOG_DEBUG("Dataset dimension is " << dim);
         Dataset<T> dataset = DataReader<T>::CreateDataset(dim);
@@ -30,6 +30,7 @@ class XvecsReader : public DataReader<T> {
             data_ptr += dim;
             file_stream.seekg(sizeof(dim), file_stream.cur);
         }
+        file_stream.close();
         return dataset;
     }
 };
