@@ -18,7 +18,7 @@ else()
     file(REMOVE ${DATASET_FILE})
 endif()
 
-add_executable(runner runner.cpp)
-target_link_libraries(runner fast_ann)
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 
-# find_package (Python3 COMPONENTS Interpreter)
+add_executable(run_brute_force_search run_brute_force_search.cpp)
+target_link_libraries(run_brute_force_search fast_ann)

@@ -8,9 +8,8 @@
 
 namespace fast_ann {
 
-typedef size_t DatasetSizeType;
-typedef DatasetSizeType DatasetIndexType;
-typedef unsigned int DimensionType;
+typedef size_t DatasetIndexType;
+typedef size_t DimensionType;
 
 template <typename T>
 class DataReader;
@@ -18,14 +17,16 @@ class DataReader;
 template <typename T>
 class Dataset {
    public:
-    inline DatasetSizeType size() { return data_.size(); }
+    typedef std::pair<DatasetIndexType, T*> DataType;
 
-    inline T* get(DatasetIndexType index) { return data_[index]; }
+    inline DatasetIndexType size() { return data_.size(); }
 
-    inline DimensionType get_dimension() { return dimension_; }
+    inline DataType item_at(DatasetIndexType index) { return data_[index]; }
+
+    inline DimensionType dimension() { return dimension_; }
 
     inline void LogData(DatasetIndexType index) {
-        T* ptr = data_[index];
+        T* ptr = data_[index].second;
         std::string data_str;
         for (int i = 0; i < dimension_; i++) {
             data_str += std::to_string(ptr[i]);
@@ -37,14 +38,14 @@ class Dataset {
    private:
     Dataset(DimensionType dimension) : dimension_(dimension) {}
 
-    Dataset(DimensionType dimension, DatasetSizeType ds_size)
+    Dataset(DimensionType dimension, DatasetIndexType ds_size)
         : dimension_(dimension) {
         data_.reserve(ds_size);
     };
 
     friend DataReader<T>;
     DimensionType dimension_;
-    std::vector<T*> data_;
+    std::vector<DataType> data_;
 };
 
 }  // namespace fast_ann

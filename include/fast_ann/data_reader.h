@@ -16,12 +16,13 @@ class DataReader {
         return Dataset<T>(dimension);
     }
 
-    Dataset<T> CreateDataset(DimensionType dimension, DatasetSizeType ds_size) {
+    Dataset<T> CreateDataset(DimensionType dimension,
+                             DatasetIndexType ds_size) {
         return Dataset<T>(dimension, ds_size);
     }
 
-    void PushData(Dataset<T>& dataset, T* data_ptr) {
-        dataset.data_.push_back(data_ptr);
+    void PushData(Dataset<T>& dataset, DatasetIndexType id, T* data_ptr) {
+        dataset.data_.push_back({id, data_ptr});
     }
 };
 

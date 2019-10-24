@@ -19,14 +19,14 @@ class XvecsReader : public DataReader<T> {
         Dataset<T> dataset = DataReader<T>::CreateDataset(dim);
         file_stream.seekg(0, file_stream.end);
         unsigned long long num_bytes_in_file = file_stream.tellg();
-        DatasetSizeType dataset_size =
+        DatasetIndexType dataset_size =
             num_bytes_in_file / (sizeof(dim) + dim * sizeof(T));
         LOG_DEBUG("Dataset size is " << dataset_size << "\n");
         T* data_ptr = new T[dim * dataset_size];
         file_stream.seekg(sizeof(dim), file_stream.beg);
-        for (DatasetSizeType i = 0; i < dataset_size; i++) {
+        for (DatasetIndexType i = 0; i < dataset_size; i++) {
             file_stream.read((char*)data_ptr, dim * sizeof(T));
-            DataReader<T>::PushData(dataset, data_ptr);
+            DataReader<T>::PushData(dataset, i, data_ptr);
             data_ptr += dim;
             file_stream.seekg(sizeof(dim), file_stream.cur);
         }
