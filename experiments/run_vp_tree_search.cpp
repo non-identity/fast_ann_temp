@@ -9,7 +9,7 @@
 #include "fast_ann/log_sinks/console_sink.h"
 #include "fast_ann/log_sinks/file_sink.h"
 #include "fast_ann/logger.h"
-#include "fast_ann/search_algorithms/brute_force_search.h"
+#include "fast_ann/search_algorithms/vp_tree_search.h"
 
 int main(int argc, char **argv) {
     std::string base_vectors_file_name, query_vectors_file_name,
@@ -58,7 +58,7 @@ int main(int argc, char **argv) {
         float_reader.read(base_vectors_file_name);
 
     int k = 100;
-    fast_ann::BruteForceSearch<float, float,
+    fast_ann::VPTreeSearch<float, float,
                                fast_ann::L2SquaredNaive<float, float>>
         algorithm(base_dataset, k);
 

@@ -20,7 +20,7 @@ class XvecsReader : public DataReader<T> {
         file_stream.seekg(0, file_stream.end);
         unsigned long long num_bytes_in_file = file_stream.tellg();
         DatasetIndexType dataset_size =
-            num_bytes_in_file / (sizeof(dim) + dim * sizeof(T));
+            num_bytes_in_file / (sizeof(int) + dim * sizeof(T));
         LOG_DEBUG("Dataset size is " << dataset_size << "\n");
         T* data_ptr = new T[dim * dataset_size];
         file_stream.seekg(sizeof(dim), file_stream.beg);

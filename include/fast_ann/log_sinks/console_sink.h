@@ -2,7 +2,6 @@
 #define FAST_ANN_LOG_SINKS_CONSOLE_SINK_H_
 
 #include <iostream>
-#include <string>
 
 #include "fast_ann/log_sink.h"
 

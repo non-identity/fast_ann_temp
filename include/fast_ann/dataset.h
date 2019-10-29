@@ -4,12 +4,13 @@
 #include <string>
 #include <vector>
 
+#include "fast_ann/distance.h"
 #include "fast_ann/logger.h"
 
 namespace fast_ann {
 
-typedef size_t DatasetIndexType;
-typedef size_t DimensionType;
+typedef int DatasetIndexType;
+typedef int DimensionType;
 
 template <typename T>
 class DataReader;
@@ -33,6 +34,25 @@ class Dataset {
             data_str += " ";
         }
         LOG_INFO("Data at index " << index << " : " << data_str);
+    }
+
+    inline void SwapData(DatasetIndexType a, DatasetIndexType b) {
+        std::swap(data_[a], data_[b]);
+    }
+
+    inline void PartitionByDistance(DatasetIndexType lower,
+                                    DatasetIndexType pos,
+                                    DatasetIndexType upper,
+                                    Distance<T, T>* dist_func) {
+        std::nth_element(
+            data_.begin() + lower + 1, data_.begin() + pos,
+            data_.begin() + upper,
+            [lower, this, dist_func](const DataType& lhs, const DataType& rhs) {
+                return dist_func->operator()(data_[lower].second, lhs.second,
+                                             dimension_) <
+                       dist_func->operator()(data_[lower].second, rhs.second,
+                                             dimension_);
+            });
     }
 
    private:

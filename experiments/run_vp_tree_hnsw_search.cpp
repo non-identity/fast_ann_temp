@@ -1,3 +1,4 @@
+#include <mpi.h>
 #include <unistd.h>
 #include <algorithm>
 #include <fstream>
@@ -12,6 +13,11 @@
 #include "fast_ann/search_algorithms/brute_force_search.h"
 
 int main(int argc, char **argv) {
+    MPI_Init(&argc, &argv);
+    int rank, count;
+    MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+    MPI_Comm_size(MPI_COMM_WORLD, &count);
+
     std::string base_vectors_file_name, query_vectors_file_name,
         ground_truth_file_name, log_file_name;
     int cmd_flag;
@@ -96,5 +102,6 @@ int main(int argc, char **argv) {
     }
     std::cout << "Average recall is : " << sum_recall / num_queries << "\n";
 
+    MPI_Finalize();
     return 0;
 }

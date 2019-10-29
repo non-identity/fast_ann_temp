@@ -3,7 +3,7 @@
 
 namespace fast_ann {
 
-typedef size_t DimensionType;
+typedef int DimensionType;
 
 template <typename T, typename R>
 class Distance {

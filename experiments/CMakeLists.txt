@@ -20,5 +20,11 @@ endif()
 
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 
-add_executable(run_brute_force_search run_brute_force_search.cpp)
-target_link_libraries(run_brute_force_search fast_ann)
+file(GLOB RUNNER_SOURCES RELATIVE_PATH *.cpp)
+foreach(runner_source ${RUNNER_SOURCES})
+    get_filename_component(runner_bin ${runner_source} NAME_WE)
+    add_executable(${runner_bin} ${runner_source})
+    target_link_libraries(${runner_bin} fast_ann)
+endforeach(runner_source ${RUNNER_SOURCES})
+
+file(COPY ${CMAKE_SOURCE_DIR}/scripts DESTINATION ${CMAKE_BINARY_DIR})
