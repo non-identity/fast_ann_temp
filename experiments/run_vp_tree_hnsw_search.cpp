@@ -1,16 +1,33 @@
 #include <mpi.h>
 #include <unistd.h>
 #include <algorithm>
+#include <chrono>
 #include <fstream>
 #include <iostream>
 #include <vector>
 
 #include "fast_ann/data_readers/xvecs_reader.h"
-#include "fast_ann/distances/l2_norm.h"
 #include "fast_ann/log_sinks/console_sink.h"
 #include "fast_ann/log_sinks/file_sink.h"
 #include "fast_ann/logger.h"
-#include "fast_ann/search_algorithms/brute_force_search.h"
+#include "hnswlib/hnswlib.h"
+#include "fast_ann/search_algorithms/vp_tree_hnsw_search.h"
+
+class Timer {
+   public:
+    Timer() { start_time = std::chrono::steady_clock::now(); };
+    float GetElapsedTime() {
+        std::chrono::steady_clock::time_point end_time =
+            std::chrono::steady_clock::now();
+        return (std::chrono::duration_cast<std::chrono::milliseconds>(
+                    end_time - start_time)
+                    .count());
+    };
+    void reset() { start_time = std::chrono::steady_clock::now(); };
+
+   private:
+    std::chrono::steady_clock::time_point start_time;
+};
 
 int main(int argc, char **argv) {
     MPI_Init(&argc, &argv);
@@ -57,50 +74,25 @@ int main(int argc, char **argv) {
         }
         fast_ann::SetLogSink(new fast_ann::FileSink(log_stream));
     }
-    fast_ann::SetLogLevel(fast_ann::LogLevel::DEBUG);
+    fast_ann::SetLogLevel(fast_ann::LogLevel::INFO);
 
     fast_ann::XvecsReader<float> float_reader;
     fast_ann::Dataset<float> base_dataset =
         float_reader.read(base_vectors_file_name);
 
     int k = 100;
-    fast_ann::BruteForceSearch<float, float,
-                               fast_ann::L2SquaredNaive<float, float>>
-        algorithm(base_dataset, k);
+    hnswlib::L2Space l2space(base_dataset.dimension());
+    fast_ann::VPTreeHNSWSearch<float> search_algo(&l2space, base_dataset);
 
     fast_ann::Dataset<float> query_dataset =
         float_reader.read(query_vectors_file_name);
     fast_ann::DatasetIndexType num_queries = query_dataset.size();
-    std::vector<std::vector<fast_ann::DatasetIndexType>> results(num_queries);
+    MPI_Barrier(MPI_COMM_WORLD);
+    Timer timer;
     for (fast_ann::DatasetIndexType i = 0; i < num_queries; i++) {
-        auto result = algorithm.Search(query_dataset.item_at(i).second);
-        results[i].reserve(k);
-        while (!result.empty()) {
-            results[i].push_back(result.top().second);
-            result.pop();
-        }
+        auto result = search_algo.searchKnn(query_dataset.item_at(i).second, k);
     }
-
-    fast_ann::XvecsReader<int> gt_reader;
-    fast_ann::Dataset<int> gt_dataset = gt_reader.read(ground_truth_file_name);
-    float sum_recall = 0;
-    for (fast_ann::DatasetIndexType i = 0; i < num_queries; i++) {
-        auto algo_result = results[i];
-        std::vector<fast_ann::DatasetIndexType> gt_result;
-        gt_result.reserve(k);
-        auto ptr = gt_dataset.item_at(i).second;
-        for (int j = 0; j < k; j++) {
-            gt_result.push_back(ptr[j]);
-        }
-        std::sort(algo_result.begin(), algo_result.end());
-        std::sort(gt_result.begin(), gt_result.end());
-        std::vector<fast_ann::DatasetIndexType> common_el(k);
-        auto it = std::set_intersection(algo_result.begin(), algo_result.end(),
-                                        gt_result.begin(), gt_result.end(),
-                                        common_el.begin());
-        sum_recall += (float)(it - common_el.begin()) / k;
-    }
-    std::cout << "Average recall is : " << sum_recall / num_queries << "\n";
+    std::cout << "Elapsed Time: " << timer.GetElapsedTime() << "\n";
 
     MPI_Finalize();
     return 0;

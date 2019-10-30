@@ -14,6 +14,7 @@ option(BUILD_EXPERIMENTS "Build experiments" ON)
 
 find_package(MPI REQUIRED)
 
+set(CMAKE_BUILD_TYPE Debug)
 add_library(fast_ann INTERFACE)
 target_compile_features(fast_ann INTERFACE cxx_std_11)
 target_include_directories(fast_ann INTERFACE ${PROJECT_SOURCE_DIR}/include)

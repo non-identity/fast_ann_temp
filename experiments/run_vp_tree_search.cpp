@@ -5,10 +5,10 @@
 #include <vector>
 
 #include "fast_ann/data_readers/xvecs_reader.h"
-#include "fast_ann/distances/l2_norm.h"
 #include "fast_ann/log_sinks/console_sink.h"
 #include "fast_ann/log_sinks/file_sink.h"
 #include "fast_ann/logger.h"
+#include "hnswlib/hnswlib.h"
 #include "fast_ann/search_algorithms/vp_tree_search.h"
 
 int main(int argc, char **argv) {
@@ -57,17 +57,17 @@ int main(int argc, char **argv) {
     fast_ann::Dataset<float> base_dataset =
         float_reader.read(base_vectors_file_name);
 
+    hnswlib::L2Space l2space(base_dataset.dimension());
+    fast_ann::VPTreeSearch<float> search_algo(&l2space, base_dataset);
+
     int k = 100;
-    fast_ann::VPTreeSearch<float, float,
-                               fast_ann::L2SquaredNaive<float, float>>
-        algorithm(base_dataset, k);
 
     fast_ann::Dataset<float> query_dataset =
         float_reader.read(query_vectors_file_name);
     fast_ann::DatasetIndexType num_queries = query_dataset.size();
     std::vector<std::vector<fast_ann::DatasetIndexType>> results(num_queries);
     for (fast_ann::DatasetIndexType i = 0; i < num_queries; i++) {
-        auto result = algorithm.Search(query_dataset.item_at(i).second);
+        auto result = search_algo.searchKnn(query_dataset.item_at(i).second, k);
         results[i].reserve(k);
         while (!result.empty()) {
             results[i].push_back(result.top().second);
