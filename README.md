@@ -5,7 +5,9 @@ Implementation of distributed, approximate k-Nearest Neighbors Search using HNSW
 ## Building
 
 > mkdir build
+
 > cd build
+
 > cmake .. && make
 
 Code samples can be found in `experiments/`.
