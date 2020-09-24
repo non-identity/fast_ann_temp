@@ -12,13 +12,21 @@ endif()
 
 option(BUILD_EXPERIMENTS "Build experiments" ON)
 
-find_package(MPI REQUIRED)
-
 set(CMAKE_BUILD_TYPE Debug)
+
+add_library(hnswlib INTERFACE)
+target_compile_features(hnswlib INTERFACE cxx_std_11)
+target_include_directories(hnswlib INTERFACE ${PROJECT_SOURCE_DIR}/external/hnswlib)
+
+find_package(MPI REQUIRED)
+find_package(OpenMP REQUIRED)
+
 add_library(fast_ann INTERFACE)
 target_compile_features(fast_ann INTERFACE cxx_std_11)
 target_include_directories(fast_ann INTERFACE ${PROJECT_SOURCE_DIR}/include)
+target_link_libraries(fast_ann INTERFACE hnswlib)
 target_link_libraries(fast_ann INTERFACE MPI::MPI_CXX)
+target_link_libraries(fast_ann INTERFACE OpenMP::OpenMP_CXX)
 
 if(BUILD_EXPERIMENTS)
     add_subdirectory(experiments)
